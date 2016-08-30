@@ -1,0 +1,106 @@
+
+#include <memory>
+
+- Smart pointers contain 
+    - unique_ptr
+    - shared_ptr
+    - weak_ptr
+
+- C++ version of object management (garbage collection-ish)
+
+- A smart pointer contains a built-in pointer, and is defined as a template class whose type parameter is the type of the pointed-to object, so you can declare smart pointers that point to a class object of any type
+
+- In C++, by ownership, we mean not just which code gets to refer to or use the object, but mostly what code is responsible for deleting it
+
+- Smart pointers make it easier to implement ownership correctly by making the smart pointer destructor the place where the object is deleted
+
+
+Shared Pointer
+-----------------
+  - shared ownership, any number of smart pointers jointly own the object
+  - reference counted
+  - object is deleted when the last owning ptr is destroyed
+  - (similar to the traditional garbage collection in managed language)
+
+  - issues : when there is a cycle of references. a->b, b->a, in which case, neither get deleted. (usually use weak_ptr in case we just need to keep a reference but not own object)
+
+Weak Pointer
+---------------
+  - doesn't own the object, and plays no part in deleting the object
+  - cannot reference value from pointer, can only interrogate or construct a shared_ptr from it
+  - it is merely an observer
+  - used to determine if the obect is still alive or has been destroyed. 
+  - knows when the object is destroyed 
+
+Unique Pointer
+-------------------
+  - only one can own the object at a time
+  - object is destroyed when this pointer goes out of scope
+  - cannot use copy assignment or constructor
+  - move assignment
+
+
+How they work
+---------------------
+
+    shr_ptr1   --->   ManagerObject  ---> object
+    shr_ptr2   
+
+  - When a shared_ptr is greated, the constructor of the shared_ptr creates a manager object. 
+  - this manager contains the pointer to the object, and has additional mechanism to manage object. (reference counting shared and weak)
+  - when another shared_ptr is created by copy or assignment from another shared_ptr, reference count is incremenated. likewise for weak_ptr
+  - when shr_ptr1 is destroyed, the destructor calls the ManagerObject to decrement reference count
+  - weak_ptr can look up the manager to determine if the object is still alive
+
+
+Restrictions of shared_ptr and weak_ptr
+------------------------------------------------------
+
+  - can only use it with objects that can be allocated with new and delete. cannot use it with stack variables
+  - ensure only one manager object per object (can we do reverse lookup? likely no)
+  - mixing raw_ptr with smart_ptr can lead to unforeseen issues, best to avoid
+
+
+===============================================================================
+
+Syntax 
+--------
+
+shared_ptr<Node> node; // empty smart ptr (no manager initialized)
+shared_ptr<Node> n1 (new Node);   // initializing to n1
+shared_ptr<Node> n1eff (make_shared<Node>()); // efficient. only one memory allocation instead of two (object and manager)
+shared_ptr<Node> n2 = n1;       // copy assignment
+shared_ptr<Node> n3 (n1);       // copy constructor
+shared_ptr<Node> nsw (nweak);
+
+node->value;        // access like normal pointer
+
+n3 = nullptr;       // reset value of n3. reference count will go from 3 to 2
+
+Node *raw = new Node;
+node = raw;     // disallowed. not same type
+
+raw = n3.get();  // getting raw pointer
+
+
+// casting shared pointers
+shared_ptr derived = static_pointer_cast<Derived>(base_ptr);
+
+
+// ==== unique pointer
+
+// cannot assign or copy construct unique pointer
+unique_ptr un1 (make_unique<Node>()); // check agian
+unique_ptr una = un1; // not allowed
+unique_ptr unc (un1); // not allowed
+
+// transfering ownership
+unique_ptr 
+
+
+Operations
+------------------
+  - Can do ==, != and <
+  - pointer addition and subtraction 
+
+

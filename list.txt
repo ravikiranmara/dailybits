@@ -1,0 +1,6 @@
+smart pointers in c++
+Design patterns
+lambda functions
+closure
+
+
